@@ -10,6 +10,9 @@ function jsonDownload(options) {
       })
     
       res.on('end', function () {
+        if (res.statusCode !== 200) {
+          return reject(res.statusCode)
+        }
         let str = Buffer.concat(chunks).toString()
         try {
           let obj = JSON.parse(str)
@@ -27,13 +30,15 @@ function jsonDownload(options) {
   })
 }
 
-function wikiSearh(term) {
+async function wikiSearh(term) {
   let options = {
     'method': 'GET',
     'hostname': 'www.wikidata.org',
     'path': `/w/api.php?action=query&format=json&list=search&utf8=1&srsearch=${term}`
   }
-  return jsonDownload(options)
+  let results = await jsonDownload(options)
+  if (results.error) throw results.error
+  return results
 }
 
 wikiSearh('Lisboa')
